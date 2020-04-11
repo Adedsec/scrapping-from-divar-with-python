@@ -17,13 +17,13 @@ def get_phone(link):
         'post-actions__get-contact')[0]
     python_button.click()
 
-    time.sleep(2)
+    time.sleep(1.5)
 
     div = driver.find_elements_by_class_name('divar-modal-footer')[0]
     agree_btn = div.find_element_by_class_name('button')
     agree_btn.click()
 
-    time.sleep(4)
+    time.sleep(1.5)
     # type text
     text_area = driver.find_element_by_class_name('post-fields-item__value')
     text = text_area.text
