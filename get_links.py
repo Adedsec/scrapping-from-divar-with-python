@@ -3,14 +3,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 
 
-def get(MainLink):
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument("--test-type")
-    options.binary_location = "C:/webdrivers/chromedriver.exe"
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+def get(mydriver, MainLink):
+
+    driver = mydriver
     driver.get(MainLink)
-    for i in range(0, 2):
+    for i in range(0, 1):
         driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
         time.sleep(2)
 
@@ -18,7 +15,7 @@ def get(MainLink):
         "//*[@id='app']/div[2]/main/div[1]/div[2]")
     childs = posts.find_elements_by_css_selector("a.post-card")
     links = [child.get_attribute('href') for child in childs]
-    driver.close()
+    # driver.close()
     return links
 
 
