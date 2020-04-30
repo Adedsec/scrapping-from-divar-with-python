@@ -1,11 +1,12 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-from phone_getter import get_phone
-import get_links
 import json
-
 import csv
+
+from utility.data_getter import get_data
+import utility.get_links
+import utility.elastic_config as elastic
 
 
 def run(url):
@@ -21,26 +22,38 @@ def run(url):
         options=options, executable_path="C:\\webdrivers\\chromedriver.exe")
 
     # getting links list
-    links = get_links.get(driver, url)
+    links = utility.get_links.get(driver, url)
     i = 0
     print(len(links))
     print("---------------------")
     print("---------------------")
-    number_list = ['numbers']
+
+    es = elastic.connect_elasticsearch()
     # loop on linkes and get phone number
     for link in links:
         if(i == 0):
-            number = get_phone(driver, link, True)
+            data = get_data(driver, link, True)
         else:
-            number = get_phone(driver, link, False)
+            data = get_data(driver, link, False)
 
-        number_list.append(number)
-        print(number_list)
+        print(data)
         print("---------------------")
+        if data != 0:
+
+            rec = json.dumps(
+                {'number': data['number'], 'category': data['category'], 'main-category': data['main-category'], 'title': data['title']})
+
+            if es is not None:
+                if elastic.create_index(es, "scrapping"):
+                    out = elastic.store_record(
+                        es, "divar-scrapping", rec, my_id=data['number'])
+                    print('Data indexed successfully')
+                    print('**********')
+                    print(out)
         i = i+1
-        if i == 5:
+        if i == 6:
             return
     driver.close()
 
 
-run('https://divar.ir/s/kerman/real-estate')
+run('https://divar.ir/s/kerman')
