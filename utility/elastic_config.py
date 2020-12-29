@@ -2,9 +2,10 @@ import json
 import logging
 from pprint import pprint
 from time import sleep
-
 import requests
 from elasticsearch import Elasticsearch
+
+# check and connect to elasticsearch
 
 
 def connect_elasticsearch():
@@ -16,6 +17,8 @@ def connect_elasticsearch():
         print('Awww it could not connect!')
     return _es
 
+# creates index in elasticsearch server
+
 
 def create_index(es_object, index_name):
     created = False
@@ -26,21 +29,10 @@ def create_index(es_object, index_name):
             "number_of_replicas": 0
         },
         "mappings": {
-            "numbers": {
+            "agahi": {
                 "dynamic": "strict",
                 "properties": {
-                    "number": {
-                        "type": "number"
-                    },
-                    "category": {
-                        "type": "text"
-                    },
-                    "main-category": {
-                        "type": "text"
-                    },
-                    "title": {
-                        "type": "text"
-                    }
+
                 }
             }
         }
@@ -58,12 +50,21 @@ def create_index(es_object, index_name):
     finally:
         return created
 
+# stores records in elasticsearch (first checks that data not exists)
 
-def store_record(elastic_object, index_name, record, my_id):
+
+def store_record(elastic_object, index_name, record, data):
     is_stored = True
+    jsonstring = elastic_object.count(index=index_name, body={
+        "query": {"match": {"title": data['title']}}})
+
+    count = jsonstring['count']
+    if count > 0:
+        print(' >><< Data Exists!')
+        return False
     try:
         outcome = elastic_object.index(
-            index=index_name, doc_type='numbers', body=record, id=my_id)
+            index=index_name, doc_type='numbers', body=record)
         print(outcome)
     except Exception as ex:
         print('Error in indexing data')
